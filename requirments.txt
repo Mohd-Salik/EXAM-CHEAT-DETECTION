@@ -1,0 +1,12 @@
+install the following to system computer:
+-python 39
+-pip
+
+upgrade pip if already installed
+-python.exe -m pip install --upgrade pip
+
+on terminal install the following libraries:
+-pip install mediapipe opencv-python
+or
+-pip install mediapipe
+-pip install opencv-python
