@@ -11,8 +11,8 @@ mp_drawing = mp.solutions.drawing_utils
 mp_holistic = mp.solutions.holistic
 cap = cv2.VideoCapture(0)
 
-DATA_PATH = os.path.join('MP_Data') # Path for exported data, numpy arrays
-actions = np.array(['Gaze Left', 'Gaze Right']) # Actions that we try to detect
+DATA_PATH = os.path.join('MOVEMENT_DATA') # Path for exported data, numpy arrays
+actions = np.array(['Gaze Normal', 'Gaze Left', 'Gaze Right', 'Speaking']) # Actions that we try to detect
 no_sequences = 30 # Thirty videos worth of data
 sequence_length = 30 # Videos are going to be 30 frames in length
 start_folder = 30 # Folder start
@@ -70,7 +70,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 
                 # NEW Apply wait logic
                 if frame_num == 0: 
-                    cv2.putText(image, 'STARTING COLLECTION', (120,200), 
+                    cv2.putText(image, 'Collecting..', (120,200), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
                     cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
@@ -78,6 +78,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     cv2.imshow('OpenCV Feed', image)
                     cv2.waitKey(2000)
                 else: 
+                    cv2.putText(image, 'frame.. {}'.format(frame_num), (120,200), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
                     cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
                     # Show to screen
