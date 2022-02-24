@@ -1,5 +1,5 @@
 install the following to system computer:
--python 39
+-python 3.9
 -pip
 
 upgrade pip if already installed
@@ -7,7 +7,6 @@ upgrade pip if already installed
 
 on terminal install the following libraries:
 -pip install mediapipe opencv-python tensorflow tensorflow-gpu sklearn matplotlib
-
 
 or install individually
 -pip install mediapipe

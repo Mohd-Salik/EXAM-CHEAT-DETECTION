@@ -1,32 +1,24 @@
-print("program started")
-
-#INSTALLING DEPENDENCIES
-import mediapipe as mp
+#DEPENDENCIES
 import cv2
-import time
+import numpy as np
+import os
 from matplotlib import pyplot as plt
-
-#GETTING REAL TIME CAMERA 
-# cap = cv2.VideoCapture(0)
-# while cap.isOpened():
-#     ret, frame = cap.read()
-
-#     #show to screen
-#     cv2.imshow('VIDEO FEED', frame)
-
-#     if cv2.waitKey(10) & 0xFF == ord('q'):
-#         break
-
-# cap.release()
-# cv2.destroyAllWindows()
-
-
+import time
+import mediapipe as mp
 
 #APPLYING HOLISTIC MODELS
-
 mp_drawing = mp.solutions.drawing_utils
 mp_holistic = mp.solutions.holistic
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
+
+
+def mediapipe_detection(image, model):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # COLOR CONVERSION BGR 2 RGB
+    image.flags.writeable = False                  # Image is no longer writeable
+    results = model.process(image)                 # Make prediction
+    image.flags.writeable = True                   # Image is now writeable 
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR) # COLOR COVERSION RGB 2 BGR
+    return image, results
 
 
 def draw_landmarks(image, results):
@@ -37,25 +29,15 @@ def draw_landmarks(image, results):
 
 
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-    
     while cap.isOpened():
         ret, frame = cap.read()
-
         results = holistic.process(frame)
-        print(results.pose_landmarks)
-        
-
         draw_landmarks(frame, results)
-
-
-        cv2.imshow('FACE DETECTION TESTING', frame)
-
+        cv2.imshow('Test', frame)
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break
-
-
-cap.release()
-cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 
