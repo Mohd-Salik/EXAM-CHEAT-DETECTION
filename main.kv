@@ -1,0 +1,109 @@
+ScreenManager:
+    LoginScreen:
+    MainStudent:
+    MainProfessor:
+    MainAdmin:
+
+<LoginScreen>:
+    id: ID_loginscreen
+    name: 'kv_login'
+    loginlabel_id: loginlabel_id
+    MDLabel:
+        id: loginlabel_id
+        text: 'ONLINE EXAM CHEAT PREDICTION'
+        halign: 'center'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        font_size: 30
+    Image:
+        id: student_img
+        source: 'UI/students.png'
+        allow_stretch: True
+        size_hint_x: 0.23
+        pos_hint: {'center_x': .25, 'center_y': 0.52}
+    Image:
+        id: professor_img
+        source: 'UI/teacher.png'
+        allow_stretch: True
+        size_hint_x: 0.29
+        pos_hint: {'center_x': .52, 'center_y': 0.55}
+    Image:
+        id: settings_img
+        source: 'UI/settings.png'
+        allow_stretch: True
+        size_hint_x: 0.20
+        pos_hint: {'center_x': .77, 'center_y': 0.50}
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: '50dp'
+        padding: '4dp'
+        pos_hint: {'center_x': .65, 'center_y': 0.6}
+        MagicButton1:
+            text: 'Im a STUDENT'
+            on_release: 
+                self.grow() 
+                root.manager.current = 'kv_MainStudent'
+                root.manager.transition.direction = "up"
+        MagicButton1:
+            text: 'Im a Professor'
+            on_release: 
+                self.grow()
+                root.manager.current = 'kv_MainProf'
+                root.manager.transition.direction = "up"
+        MagicButton1:
+            text: 'ADMIN'
+            on_release: 
+                self.grow()
+                root.manager.current = 'kv_MainAdmin'
+                root.manager.transition.direction = "up"
+
+
+<MainStudent>:
+    id: ID_MainStudentScreen
+    name: 'kv_MainStudent'
+    studentlabel_id: studentlabel_id
+    MDLabel:
+        id: studentlabel_id
+        text: 'Student Screen'
+        halign: 'center'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        font_size: 30
+    MagicButton1:
+        text: 'HOME'
+        on_release: 
+            self.grow()
+            root.manager.current = 'kv_login'
+            root.manager.transition.direction = "up"
+
+<MainProfessor>:
+    id: ID_MainProfScreen
+    name: 'kv_MainProf'
+    proflabel_id: proflabel_id
+    MDLabel:
+        id: proflabel_id
+        text: 'Professor Screen'
+        halign: 'center'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        font_size: 30
+    MagicButton1:
+        text: 'HOME'
+        on_release: 
+            self.grow()
+            root.manager.current = 'kv_login'
+            root.manager.transition.direction = "up"
+
+<MainAdmin>:
+    id: ID_MainAdminScreen
+    name: 'kv_MainAdmin'
+    adminlabel_id: adminlabel_id
+    MDLabel:
+        id: adminlabel_id
+        text: 'Professor Screen'
+        halign: 'center'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        font_size: 30
+    MagicButton1:
+        text: 'HOME'
+        on_release: 
+            self.grow()
+            root.manager.current = 'kv_login'
+            root.manager.transition.direction = "up"

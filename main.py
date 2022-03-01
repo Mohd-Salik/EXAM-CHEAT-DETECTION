@@ -1,115 +1,46 @@
-#DEPENDENCIES
-import cv2
-import mediapipe as mp
-import numpy as np
-import os
-import time
+from kivy.core.window import Window
+from kivymd.app import MDApp
+from kivy.uix.screenmanager import Screen, ScreenManager
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.screen import Screen
+from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.behaviors.magic_behavior import MagicBehavior
 
-from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
-from tensorflow.keras.callbacks import TensorBoard
+class MagicButton1(MagicBehavior, MDRaisedButton):
+    pass
 
+class LoginScreen(Screen):
+    print("INITIALIZED: LOGIN SCREEN")
 
-#PREPROCESS MOVEMENT DATA SET
-DATA_PATH = os.path.join('MOVEMENT_DATA')
-actions = np.array(['Gaze Normal', 'Gaze Left', 'Gaze Right'])
-no_sequences = 30 
-sequence_length = 30
-start_folder = 30 
-label_map = {label:num for num, label in enumerate(actions)}
-sequences, labels = [], []
-for action in actions:
-    for sequence in range(no_sequences):
-        window = []
-        for frame_num in range(sequence_length):
-            res = np.load(os.path.join(DATA_PATH, action, str(sequence), "{}.npy".format(frame_num)))
-            window.append(res)
-        sequences.append(window)
-        labels.append(label_map[action])
+class MainStudent(Screen):
+    print("INITIALIZED: student SCREEN")
 
-sequence = []
-sentence = []
-threshold = 0.8
-model = Sequential()
-model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,1662)))
-model.add(LSTM(128, return_sequences=True, activation='relu'))
-model.add(LSTM(64, return_sequences=False, activation='relu'))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(32, activation='relu'))
-model.add(Dense(actions.shape[0], activation='softmax'))
-res = [.7, 0.2, 0.1]
-model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
-model.load_weights('movement.h5')
+class MainProfessor(Screen):
+    print("INITIALIZED: prof SCREEN")
 
-colors = [(245,117,16), (117,245,16), (16,117,245)]
-def prob_viz(res, actions, input_frame, colors):
-    output_frame = input_frame.copy()
-    for num, prob in enumerate(res):
-        cv2.rectangle(output_frame, (0,60+num*40), (int(prob*100), 90+num*40), colors[num], -1)
-        cv2.putText(output_frame, actions[num], (0, 85+num*40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
-        
-    return output_frame
+class MainAdmin(Screen):
+    print("INITIALIZED: admin SCREEN")
+    
 
-def mediapipe_detection(image, model):
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) 
-    image.flags.writeable = False                 
-    results = model.process(image)                 
-    image.flags.writeable = True                   
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR) 
-    return image, results
+# Main build class
+class OECP(MDApp):
+    def build(self):
+        global sm
+        self.load_kv('main.kv')
+        sm = ScreenManager()
+        sm.add_widget(LoginScreen(name = 'kv_login'))
+        sm.add_widget(MainStudent(name = 'kv_MainStudent'))
+        sm.add_widget(MainProfessor(name = 'kv_MainProf'))
+        sm.add_widget(MainAdmin(name = 'kv_MainAdmin'))
+        print("INITIALIZED: SCREEN MANAGER AND SCREENS")
+        return sm
 
 
-def draw_landmarks(image, results):
-    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
-    mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-    mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+if __name__ == "__main__":
+    # # Kivy Initialization
 
+    print("INITIALIZED: MAIN")
+    Window.size = (600, 300)
+    OECP().run()
 
-def extract_keypoints(results):
-    pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33*4)
-    face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
-    lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
-    rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
-    return np.concatenate([pose, face, lh, rh])
-
-
-#APPLYING HOLISTIC MODELS
-mp_drawing = mp.solutions.drawing_utils
-mp_holistic = mp.solutions.holistic
-cap = cv2.VideoCapture(1)
-
-sequence = []
-sentence = []
-threshold = 0.8
-
-cap = cv2.VideoCapture(0)
-with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-    while cap.isOpened():
-        ret, frame = cap.read()
-        image, results = mediapipe_detection(frame, holistic)
-        print(results)
-        draw_landmarks(image, results)
-        keypoints = extract_keypoints(results)
-        sequence.append(keypoints)
-        sequence = sequence[-30:]
-        if len(sequence) == 30:
-            res = model.predict(np.expand_dims(sequence, axis=0))[0]
-            print(actions[np.argmax(res)])
-            if res[np.argmax(res)] > threshold: 
-                if len(sentence) > 0: 
-                    if actions[np.argmax(res)] != sentence[-1]:
-                        sentence.append(actions[np.argmax(res)])
-                else:
-                    sentence.append(actions[np.argmax(res)])
-            if len(sentence) > 5: 
-                sentence = sentence[-5:]
-            image = prob_viz(res, actions, image, colors)
-        cv2.imshow('OpenCV Feed', image)
-
-        if cv2.waitKey(10) & 0xFF == ord('q'):
-            break
-    cap.release()
-    cv2.destroyAllWindows()
