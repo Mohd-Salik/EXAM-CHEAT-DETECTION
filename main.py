@@ -21,6 +21,12 @@ class MainProfessor(Screen):
 
 class MainAdmin(Screen):
     print("INITIALIZED: admin SCREEN")
+
+class LoggedProfessor(Screen):
+    print("INITIALIZED: LoggedProfessor SCREEN")
+    
+class LoggedStudent(Screen):
+    print("INITIALIZED: LoggedStudent SCREEN")
     
 
 # Main build class
@@ -29,9 +35,11 @@ class OECP(MDApp):
         global sm
         self.load_kv('main.kv')
         sm = ScreenManager()
-        sm.add_widget(LoginScreen(name = 'kv_login'))
         sm.add_widget(MainStudent(name = 'kv_MainStudent'))
+        sm.add_widget(LoginScreen(name = 'kv_login'))
+        sm.add_widget(LoggedStudent(name = 'kv_LoggedStudent'))
         sm.add_widget(MainProfessor(name = 'kv_MainProf'))
+        sm.add_widget(LoggedProfessor(name = 'kv_LoggedProf'))
         sm.add_widget(MainAdmin(name = 'kv_MainAdmin'))
         print("INITIALIZED: SCREEN MANAGER AND SCREENS")
         return sm
