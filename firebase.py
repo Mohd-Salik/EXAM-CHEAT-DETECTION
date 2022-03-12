@@ -69,14 +69,21 @@ database = firebase.database()
 #     print(person.val())
 #     print(person.key())
 
-rooms=database.child("ROOMS").child("testtest@gmail+com").get()
-for owner in rooms.each():
-    if owner.val()['room name']=="FIL021-Quiz2":
-        print("YES")
+# rooms=
+database.child("ROOMS").child("qwe@gmail+com").get()
+# for owner in rooms.each():
+#     print(owner.key())
 
-# for person in people.each():
-#     if person.val()['name']=='jande':
-#         database.child('people').child(person.key()).update({'age': 22})
+data = {"Action": "Lookleft8", "File": "2022-03-11 08:53:44.496813]201812"}
+
+people = database.child("ROOMS").child("qwe@gmail+com").child("CS004-Examinations").child("201812").get()
+
+for person in people.each():
+    if person.key() == "-MxtOARqIIPt8QDFBZ23":
+        print(person.val())
+    # print(person.key())
+    # if person.val()['name']=='jande':
+    #     database.child('people').child(person.key()).update({'age': 22})
 
 # DELETE DATA
 # for person in people.each():

@@ -33,9 +33,9 @@ DATA_PATH = os.path.join('pose_data')
 actions = np.array(['Looking_down', 'Looking_left'])
 
 # 30 videos
-no_sequences = 20
+no_sequences = 500
 # frames
-sequence_length = 30
+sequence_length = 10
 
 for action in actions: 
     for sequence in range(no_sequences):
