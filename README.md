@@ -20,4 +20,5 @@ or install individually
 -pip install tensorflow   
 -pip install tensorflow-gpu (400mb)   
 -pip install sklearn   
--pip install matplotlib   
+-pip install matplotlib  
+-pip install pyrebase4
