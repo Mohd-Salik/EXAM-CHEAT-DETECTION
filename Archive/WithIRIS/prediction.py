@@ -64,7 +64,6 @@ sequence = []
 sentence = []
 threshold = 0.8
 
-cap = cv2.VideoCapture(0)
 
 
 mp_drawing = mp.solutions.drawing_utils
@@ -74,7 +73,7 @@ mp_holistic = mp.solutions.holistic
 
 
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture("videoplayback.mp4")
 with mp_face_mesh.FaceMesh(
     max_num_faces=1,
     refine_landmarks=True,
@@ -88,7 +87,7 @@ with mp_face_mesh.FaceMesh(
             if not success:
                 print("Ignoring empty camera frame.")
                 # If loading a video, use 'break' instead of 'continue'.
-                continue
+                break
             
             
             image.flags.writeable = False
@@ -100,49 +99,49 @@ with mp_face_mesh.FaceMesh(
 
             key_points = extract_keypoints(results_facemesh, results_holistic)
             
-            sequence.append(key_points)
-            sequence = sequence[-30:]
-            if len(sequence) == 30:
-                res = model.predict(np.expand_dims(sequence, axis=0))[0]
-                print(actions[np.argmax(res)])
-                if res[np.argmax(res)] > threshold: 
-                    if len(sentence) > 0: 
-                        if actions[np.argmax(res)] != sentence[-1]:
-                            sentence.append(actions[np.argmax(res)])
-                    else:
-                        sentence.append(actions[np.argmax(res)])
-                if len(sentence) > 5: 
-                    sentence = sentence[-5:]
-                image = prob_viz(res, actions, image, colors)
+            # sequence.append(key_points)
+            # sequence = sequence[-30:]
+            # if len(sequence) == 30:
+            #     res = model.predict(np.expand_dims(sequence, axis=0))[0]
+            #     print(actions[np.argmax(res)])
+            #     if res[np.argmax(res)] > threshold: 
+            #         if len(sentence) > 0: 
+            #             if actions[np.argmax(res)] != sentence[-1]:
+            #                 sentence.append(actions[np.argmax(res)])
+            #         else:
+            #             sentence.append(actions[np.argmax(res)])
+            #     if len(sentence) > 5: 
+            #         sentence = sentence[-5:]
+            #     image = prob_viz(res, actions, image, colors)
 
-            mp_drawing.draw_landmarks(image, results_holistic.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
-            mp_drawing.draw_landmarks(image, results_holistic.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-            mp_drawing.draw_landmarks(image, results_holistic.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-            if results_facemesh.multi_face_landmarks:
-                for face_landmarks in results_facemesh.multi_face_landmarks:
-                    mp_drawing.draw_landmarks(
-                        image=image,
-                        landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_TESSELATION,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=mp_drawing_styles
-                        .get_default_face_mesh_tesselation_style())
-                    mp_drawing.draw_landmarks(
-                        image=image,
-                        landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_CONTOURS,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=mp_drawing_styles
-                        .get_default_face_mesh_contours_style())
-                    mp_drawing.draw_landmarks(
-                        image=image,
-                        landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_IRISES,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=mp_drawing_styles
-                        .get_default_face_mesh_iris_connections_style())
+            # mp_drawing.draw_landmarks(image, results_holistic.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
+            # mp_drawing.draw_landmarks(image, results_holistic.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+            # mp_drawing.draw_landmarks(image, results_holistic.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+            # if results_facemesh.multi_face_landmarks:
+            #     for face_landmarks in results_facemesh.multi_face_landmarks:
+            #         mp_drawing.draw_landmarks(
+            #             image=image,
+            #             landmark_list=face_landmarks,
+            #             connections=mp_face_mesh.FACEMESH_TESSELATION,
+            #             landmark_drawing_spec=None,
+            #             connection_drawing_spec=mp_drawing_styles
+            #             .get_default_face_mesh_tesselation_style())
+            #         mp_drawing.draw_landmarks(
+            #             image=image,
+            #             landmark_list=face_landmarks,
+            #             connections=mp_face_mesh.FACEMESH_CONTOURS,
+            #             landmark_drawing_spec=None,
+            #             connection_drawing_spec=mp_drawing_styles
+            #             .get_default_face_mesh_contours_style())
+            #         mp_drawing.draw_landmarks(
+            #             image=image,
+            #             landmark_list=face_landmarks,
+            #             connections=mp_face_mesh.FACEMESH_IRISES,
+            #             landmark_drawing_spec=None,
+            #             connection_drawing_spec=mp_drawing_styles
+            #             .get_default_face_mesh_iris_connections_style())
             # Flip the image horizontally for a selfie-view display.
             cv2.imshow('OpenCV Feed', image)
-            if cv2.waitKey(10) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 cap.release()

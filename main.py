@@ -1,4 +1,3 @@
-from re import S
 from kivy.core.window import Window
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen, ScreenManager
@@ -7,7 +6,7 @@ from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.screen import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.behaviors.magic_behavior import MagicBehavior
-from datetime import datetime
+
 
 import pyrebase
 import urllib
@@ -17,6 +16,7 @@ import mediapipe as mp
 import numpy as np
 import os
 import time
+from datetime import datetime
 
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -54,7 +54,7 @@ class visualTracking():
         self.mp_holistic = mp.solutions.holistic
         self.mp_face_mesh = mp.solutions.face_mesh
 
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture("2021160070.m4v")
         
         self.sequence = []
         self.current_action = ""
@@ -73,7 +73,7 @@ class visualTracking():
             action_str = str(self.actions[num])
             
             # If the action has 90% detection probability
-            if (int(prob*100)) > 90:
+            if (int(prob*100)) > 80:
                 if (action_str == "Up_Head_Tilt"):
                     pass
                 
@@ -112,6 +112,14 @@ class visualTracking():
                             self.save = False
 
                             print(self.current_action, "total time: ", int(time_action))
+            # else:
+            #     time_action = int(time.time() - self.time_start)
+            #     self.final_time.append(str(time_action))
+            #     self.time_start = 0
+            #     self.save = False
+
+            #     print(self.current_action, "total time: ", int(time_action))
+
 
 
     # Return all keypoints from the frame
@@ -145,8 +153,8 @@ class visualTracking():
                 while self.cap.isOpened():
                     success, image = self.cap.read()
                     if not success:
-                        print("ERROR: No Camera Detected")
-                        continue
+                        self.probabilityDetect(prediction_results, image, True)
+                        break
                     
                     # Converting image frame to readable and writable
                     image.flags.writeable = False
@@ -194,7 +202,7 @@ class visualTracking():
                     cv2.imshow('Realtime Detection', image)
                     
                     # Quit the detection window
-                    if cv2.waitKey(10) & 0xFF == ord('q'):
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
                         self.probabilityDetect(prediction_results, image, True)
                         break
                 
