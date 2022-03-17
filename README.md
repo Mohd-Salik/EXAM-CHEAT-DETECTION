@@ -22,3 +22,5 @@ or install individually
 -pip install sklearn   
 -pip install matplotlib  
 -pip install pyrebase4
+-pip install kivy
+-pip install kivymd
