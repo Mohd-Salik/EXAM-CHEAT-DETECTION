@@ -1,5 +1,4 @@
 from pickle import TRUE
-import numpy as np
 import os
 import time
 from datetime import datetime

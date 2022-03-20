@@ -190,6 +190,7 @@ ScreenManager:
         pos_hint: {'center_x': .6, 'center_y': 0.2}
         on_release: 
             self.grow()
+            root.loadRooms()
             root.manager.current = 'kv_MyRooms'
     MagicButton1:
         text: 'LOGOUT'
@@ -202,39 +203,12 @@ ScreenManager:
 
 <MyRooms>:
     name: 'kv_MyRooms'
+    listID_MainList: listID_MainList
     ScrollView:
         size_hint: 0.8, 0.5
         pos_hint: {'center_x': 0.5, 'center_y': 0.7}
         MDList:
-            OneLineAvatarIconListItem:
-                text: "CS004-MIDTERMS"
-                on_release: print("Click!")
-                IconLeftWidget:
-                    icon: "github"
-            OneLineAvatarIconListItem:
-                text: "CS004-PracrticeQuiz"
-                on_release: print("Click!")
-                IconLeftWidget:
-                    icon: "github"
-            OneLineAvatarIconListItem:
-                text: "CS004-Quizlett"
-                on_release: print("Click 2!")
-                IconLeftWidget:
-                    icon: "gitlab"
-            OneLineAvatarIconListItem:
-                text: "CS004-FINALS"
-                on_release: print("Click!")
-                IconLeftWidget:
-                    icon: "github"
-            OneLineAvatarIconListItem:
-                text: "CS022-Quiz1"
-                on_release: print("Click!")
-                IconLeftWidget:
-                    icon: "github"
-            OneLineAvatarIconListItem:
-                on_release: print("Click 2!")
-                IconLeftWidget:
-                    icon: "gitlab"
+            id: listID_MainList
     MagicButton1:
         text: 'BACK'
         pos_hint: {'center_x': .2, 'center_y': 0.2}

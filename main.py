@@ -6,6 +6,7 @@ from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.screen import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.behaviors.magic_behavior import MagicBehavior
+from kivymd.uix.list import OneLineAvatarListItem, ThreeLineAvatarListItem, TwoLineAvatarListItem, ImageLeftWidget
 
 
 import pyrebase
@@ -54,8 +55,7 @@ class visualTracking():
         self.mp_holistic = mp.solutions.holistic
         self.mp_face_mesh = mp.solutions.face_mesh
 
-        self.cap = cv2.VideoCapture("2021160070.m4v")
-        
+        self.cap = cv2.VideoCapture(1)
         self.sequence = []
         self.current_action = ""
         self.threshold = 0.8
@@ -273,6 +273,22 @@ class databaseInit():
                     return True
         except:
             return False
+
+    def getRooms(self, profname):
+        data = self.database.child("ROOMS").child(profname).get()
+        total = []
+        for person in data.each():
+            total.append(person.val()['room name'])
+        return total
+    
+    def getStudents(self, profname, room_name):
+        data = self.database.child("ROOMS").child(profname).child(room_name).get()
+        total = []
+        for person in data.each():
+            if (str(person.key()) == "room name"):
+                pass
+            total.append(str(person.key()))
+        return total
     
     # Create student entry on the examination room
     def createStudent(self, studentID, professors_name, room_name):
@@ -312,7 +328,7 @@ class databaseInit():
 
 class userInit():
     def __init__(self, **kwargs):
-        self.prof_mail = ""
+        self.prof_mail = "test_professor@gmail+com"
         self.prof_pass = ""
         self.student_name = ""
         self.room_name = ""
@@ -414,7 +430,24 @@ class LoggedProfessor(Screen):
     
     def clear(self):
         self.ids.textID_createroom.text = ""
+    
+    def loadRooms(self):
+        list_rooms = db.getRooms(user.profMail())
+        for room in list_rooms:
+            room_name = str(room)
+            # profile = TwoLineAvatarListItem(text = primary_text, secondary_text = secondary_text, tertiary_text = distance, on_release = lambda doctor_email:self.loadDoctorBooking(doctor_email))
+            profile = TwoLineAvatarListItem(text = room_name, on_release = lambda room_name:self.loadStudents(room_name))
+            self.parent.get_screen("kv_MyRooms").ids.listID_MainList.add_widget(profile)
 
+    
+    def loadStudents(self, room_name):
+        global sm
+        sm.get_screen("kv_MyRooms").ids.listID_MainList.clear_widgets()
+        list_students = db.getStudents(user.profMail(), str(room_name.text))
+        for students in list_students:
+            students_name = str(students)
+            profile = TwoLineAvatarListItem(text = students_name)
+            sm.get_screen("kv_MyRooms").ids.listID_MainList.add_widget(profile)
 
 class LoggedStudent(Screen):
     print("INITIALIZED: LoggedStudent SCREEN")
@@ -462,9 +495,11 @@ class OECP(MDApp):
         global sm
         self.load_kv('main.kv')
         sm = ScreenManager()
+        sm.add_widget(LoggedProfessor(name = 'kv_LoggedProf'))
+        sm.add_widget(MyRooms(name = 'kv_MyRooms'))
         sm.add_widget(MainStudent(name = 'kv_MainStudent'))
         sm.add_widget(MyRooms(name = 'kv_MyRooms'))
-        sm.add_widget(LoggedProfessor(name = 'kv_LoggedProf'))
+        
         sm.add_widget(MainStudent(name = 'kv_MainStudent'))
         sm.add_widget(MainProfessor(name = 'kv_MainProf'))
         sm.add_widget(SignProfessor(name = 'kv_SignProf'))
@@ -480,7 +515,7 @@ if __name__ == "__main__":
     print("INITIALIZED: MAIN")
     db = databaseInit()
     user = userInit()
-    tracking = visualTracking()
+    # tracking = visualTracking()
     Window.size = (600, 300)
     OECP().run()
 
