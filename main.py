@@ -67,6 +67,8 @@ class visualTracking():
         self.imagefile = ""
         self.save = False
 
+
+
     def probabilityDetect(self, probability_results, image, end):
         global time_start, current_action
         for num, prob in enumerate(probability_results):
@@ -275,21 +277,50 @@ class databaseInit():
             return False
 
     def getRooms(self, profname):
-        data = self.database.child("ROOMS").child(profname).get()
+        prof_name = profname.replace(".", "+")
+        data = self.database.child("ROOMS").child(prof_name).get()
         total = []
         for person in data.each():
             total.append(person.val()['room name'])
         return total
     
     def getStudents(self, profname, room_name):
-        data = self.database.child("ROOMS").child(profname).child(room_name).get()
+        prof_name = profname.replace(".", "+")
+        data = self.database.child("ROOMS").child(prof_name).child(room_name).get()
         total = []
         for person in data.each():
             if (str(person.key()) == "room name"):
                 pass
             total.append(str(person.key()))
         return total
+
+    def getStudentData(self, profname, room_name, student_name):
+        prof_name = profname.replace(".", "+")
+        print("DATABSE: ", prof_name, room_name, student_name)
+        data = self.database.child("ROOMS").child(prof_name).child(room_name).child(student_name).get()
+        print("DATA: ", data)
+        actions = []
+        images = []
+        for entry in data.each():
+            try:
+                actions.append(entry.val()["Action"])
+                images.append(entry.val()["File"])
+            except:
+                print("DEBUG DATA: NOT AN ENTRY")
+
+        return actions, images
     
+    def getImage(self, prof_name, room_name, student_name, image_name):
+        prof_name_db = prof_name.replace(".", " ")
+        path = "ROOMS/{}/{}/{}/{}".format(prof_name_db, room_name, student_name, image_name)
+        print(path)
+        try:
+            self.storage.child(path).download("", "Imagebin/{}".format(image_name))
+            print("DOWNLAODED IMAGE")
+            return True
+        except:
+            return False
+
     # Create student entry on the examination room
     def createStudent(self, studentID, professors_name, room_name):
         name = professors_name.replace(".", "+") # sample@gmail+com (Bugfix)
@@ -303,9 +334,6 @@ class databaseInit():
     # Upload detection results to student entry
     def uploadResults(self, images, actions, time, studentID, professors_name, room_name):
         name = professors_name.replace(".", "+")
-        # print("ACTIONS: {}".format(len(actions)), actions)
-        # print("Time: {}".format(len(time)), time)
-        # print("Images:  {}".format(len(images)), images)
 
         for index in range(len(images)):
             try:
@@ -328,10 +356,11 @@ class databaseInit():
 
 class userInit():
     def __init__(self, **kwargs):
-        self.prof_mail = "test_professor@gmail+com"
+        self.prof_mail = ""
         self.prof_pass = ""
         self.student_name = ""
         self.room_name = ""
+        self.actions = []
     
     def profMail(self):
         return self.prof_mail
@@ -350,16 +379,44 @@ class userInit():
         self.prof_mail = str(professors_email)
         self.room_name = str(room)
 
-    def userLogged(self, email, password):
-        self.prof_mail = str(email)
-        self.prof_pass = str(password)
-
     def clearAll(self):
         self.prof_mail = ""
         self.prof_pass = ""
         self.student_name = ""
         self.room_name = ""
 
+    def setRoomName(self, room):
+        self.room_name = str(room)
+
+    def getRoomName(self):
+        return self.room_name
+
+    def clearRoomName(self):
+        self.room_name = ""
+
+    def setStudentName(self, student):
+         self.student_name = str(student)
+
+    def getStudentName(self):
+        return  self.student_name
+
+    def clearStudentName(self):
+        self.student_name = ""
+
+    def setProfessorName(self, prof_name):
+        self.prof_mail = str(prof_name)
+
+    def getProfessorName(self):
+        return self.prof_mail
+
+    def setProfessorPassword(self, prof_pass):
+        self.prof_pass = str(prof_pass)
+
+    def setResults(self, actions):
+        self.actions = actions
+
+    def getResults(self):
+        return self.actions
 
 class LoginScreen(Screen):
     print("INITIALIZED: LOGIN SCREEN")
@@ -377,6 +434,14 @@ class MainStudent(Screen):
         if (db.joinRoom(prof_mail, room_name)) == True:
             user.studentLogged(student_name, prof_mail, room_name)
             self.parent.get_screen("kv_LoggedStudent").ids.labelID_loggedstudentlabel.text = "{} have joined the room".format(student_name)
+            
+            try:
+                Image_dir = "Imagebin"
+                for f in os.listdir(Image_dir):
+                    os.remove(os.path.join(Image_dir, f))
+            except:
+                print("DEBUG: CANNOT DELETE IMAGES")
+
             self.parent.current = "kv_LoggedStudent"
 
         elif (db.joinRoom(prof_mail, room_name)) == False:
@@ -390,78 +455,151 @@ class MainStudent(Screen):
 
 
 class MainProfessor(Screen):
-    print("INITIALIZED: prof SCREEN")
-    
+
     def logIn(self):
         signin_email = self.ids.textID_profmail.text
         signin_password = self.ids.textID_profpass.text
-        self.clear()
 
         if (db.signIn(signin_email, signin_password)) == True:
+            print("DEBUG: {}, {} Successfully Logged".format(signin_email, signin_password))
+            user.setProfessorName(signin_email)
+            user.setProfessorPassword(signin_password)
+
             self.ids.labelID_mainprof.text = "SIGN IN SUCCESS"
-            user.userLogged(signin_email, signin_password)
+            self.parent.get_screen("kv_LoggedProf").ids.labelID_loggedprof.text = "Welcome {}!".format(signin_email)
             self.parent.current = "kv_LoggedProf"
+
         elif (db.signIn(signin_email, signin_password)) == False:
+            print("DEBUG: {}, {} Log In Failed, Invalid Input".format(signin_email, signin_password))
             self.ids.labelID_mainprof.text = "SIGN IN FAILED"
-    
+        
+        self.clear()
+
     def clear(self):
         self.ids.textID_profmail.text = ""
         self.ids.textID_profpass.text = ""
 
+    def resetText(self):
+        self.ids.labelID_mainprof.text = 'LOGIN PAGE'
+
+    
+
 
 class MainAdmin(Screen):
-    print("INITIALIZED: admin SCREEN")
+    print("DEBUG: Main Admin Screen")
 
 
 class LoggedProfessor(Screen):
-    print("INITIALIZED: LoggedProfessor SCREEN")
 
     def createRoom(self):
         room_name = self.ids.textID_createroom.text
-        self.clear()
-
         if (room_name) == "":
-            self.ids.labelID_loggedprof.text = "Invalid Room Name"
+            self.ids.labelID_loggedprof.text = "Invalid: Room Name Empty"
+
         else:
             if (db.createRoom(user.profMail(), room_name)) == True:
-                self.ids.labelID_loggedprof.text = "room '{}' has been created".format(room_name)
+                self.ids.labelID_loggedprof.text = "Room '{}'\n has been created\n".format(room_name)
+                print("DEBUG: Created Room {}".format(room_name))
+
             elif (db.createRoom(user.profMail(), room_name)) == False:
                 self.ids.labelID_loggedprof.text = "Failed to create room '{}'".format(room_name)
-    
+                print("DEBUG: Failed to Create Room {}".format(room_name))
+
+        self.clear()
+
     def clear(self):
         self.ids.textID_createroom.text = ""
     
     def loadRooms(self):
-        list_rooms = db.getRooms(user.profMail())
+        list_rooms = db.getRooms(user.getProfessorName())
+
         for room in list_rooms:
             room_name = str(room)
-            # profile = TwoLineAvatarListItem(text = primary_text, secondary_text = secondary_text, tertiary_text = distance, on_release = lambda doctor_email:self.loadDoctorBooking(doctor_email))
-            profile = TwoLineAvatarListItem(text = room_name, on_release = lambda room_name:self.loadStudents(room_name))
-            self.parent.get_screen("kv_MyRooms").ids.listID_MainList.add_widget(profile)
-
+            list_item = TwoLineAvatarListItem(text = room_name, on_release = lambda room_name:self.loadStudents(room_name))
+            self.parent.get_screen("kv_MyRooms").ids.listID_MainList.add_widget(list_item)
+        print("DEBUG: Rooms for {} Loaded, {}".format(user.getProfessorName(), list_rooms))
     
-    def loadStudents(self, room_name):
+    def loadStudents(self, room):
         global sm
+        room_name = room.text
+        user.setRoomName(room_name)
         sm.get_screen("kv_MyRooms").ids.listID_MainList.clear_widgets()
-        list_students = db.getStudents(user.profMail(), str(room_name.text))
+        list_students = db.getStudents(user.getProfessorName(), str(room_name))
+
         for students in list_students:
             students_name = str(students)
-            profile = TwoLineAvatarListItem(text = students_name)
+            profile = TwoLineAvatarListItem(text = students_name, on_release = lambda students_name:self.loadData(students_name))
             sm.get_screen("kv_MyRooms").ids.listID_MainList.add_widget(profile)
+        print("DEBUG: Loaded All Students on Room")
+        
+    def loadData(self, student_name):
+        global sm
+        user.setStudentName(student_name.text)
+        list_actions, list_images = db.getStudentData(user.getProfessorName(), user.getRoomName(), student_name.text)
+        
+        # Calculating Variation Percentage
+        total_left = []
+        total_right = []
+        total_center = []
+        total_lower = []
+        
+        for actions in list_actions:
+            actions_split = actions.split("]")
+            if actions_split[0] == "Right_Head_Tilt":
+                total_right.append(int(actions_split[1]))
+            elif actions_split[0] == "Left_Head_Tilt":
+                total_left.append(int(actions_split[1]))
+            elif actions_split[0] == "Down_Head_Tilt":
+                total_lower.append(int(actions_split[1]))
+            elif actions_split[0] == "Centered":
+                total_center.append(int(actions_split[1]))
+            else:
+                print("ACTION NOT FOUND: ", actions_split)
+        total_detection = len(total_center) + len(total_right) + len(total_lower) + len(total_left)
+        summation = sum(total_center) + sum(total_right) + sum(total_lower) + sum(total_left)
+        center_pers = (sum(total_center)/summation)*100
+        left_pers = (sum(total_left)/summation)*100
+        right_pers = (sum(total_right)/summation)*100
+        lower_pers = (sum(total_lower)/summation)*100
+        summary = "TOTAL DETECTION: {}\nCENTERED: {}%\nLEFT TILT: {}%\n RIGHT TILT: {}%\n LOWER TILT: {}%".format(
+            total_detection,
+            round(center_pers, 2),
+            round(left_pers, 2),
+            round(right_pers, 2),
+            round(lower_pers, 2)
+        )
+        sm.get_screen("kv_MyData").ids.labelID_DataLabel.text = summary
+        user.setResults(list_actions)
+        print("DEBUG: Calculated Percentage Variations")
+        
+        for image in list_images:
+            image_file = str(image)
+            action_name = list_actions[list_images.index(image_file)]
+            action_split = action_name.split("]")
+            profile = TwoLineAvatarListItem(text = image_file, secondary_text = "{} for {} seconds".format(action_split[0], action_split[1]), on_release = lambda image_file:self.loadImage(image_file))
+            sm.get_screen("kv_MyData").ids.listID_DataList.add_widget(profile)
+        sm.current = "kv_MyData"
+
+    def loadImage(self, image_file):
+        global sm
+        status = db.getImage(user.getProfessorName(), user.getRoomName(), user.getStudentName(), image_file.text)
+        if status == True:
+            sm.get_screen("kv_MyData").ids.imageID_DataImage.source = "Imagebin/{}".format(image_file.text)
+        elif status == False: 
+            sm.get_screen("kv_MyData").ids.imageID_DataImage.source = "UI/default.jpg"
+
 
 class LoggedStudent(Screen):
-    print("INITIALIZED: LoggedStudent SCREEN")
 
     def runVisualDetection(self):
         pass
 
     def createStudentLog(self):
-        db.createStudent(user.studentID(), user.profMail() ,user.studentRoom())
+        db.createStudent(user.studentID(), user.getProfessorName() , user.studentRoom())
         tracking.runTracking()
 
 
 class SignProfessor(Screen):
-    print("INITIALIZED: Sign-Up SCREEN")
 
     def signUpProcess(self):
         signup_email = self.ids.textID_signprofmail.text
@@ -469,7 +607,7 @@ class SignProfessor(Screen):
         self.clear()
 
         if (db.signUp(signup_email, signup_password)) == True:
-            self.parent.get_screen("kv_Signed").ids.labelID_signed.text = "ACCOUNT HAS BEEN CREATED, YOU MAY NOW LOG IN"
+            self.parent.get_screen("kv_Signed").ids.labelID_signed.text = "ACCOUNT HAS BEEN CREATED\nYOU MAY NOW LOG IN"
         elif (db.signUp(signup_email, signup_password)) == False:
             self.parent.get_screen("kv_Signed").ids.labelID_signed.text = "SIGN UP FAILED"
             
@@ -485,26 +623,64 @@ class Signed(Screen):
 class MyRooms(Screen):
     print("INITIALIZED: MyRooms SCREEN")
 
-    def displayRooms(self):
-        pass
+    def clearList(self):
+        self.ids.listID_MainList.clear_widgets()
 
+
+class MyData(Screen):
+    def showGraph(self):
+        list_actions = user.getResults()
+        x = []
+        height = []
+        color_bar = []
+        for action in list_actions:
+            actions_split = action.split("]")
+            if actions_split[0] == "Right_Head_Tilt":
+                x.append(actions_split[0])
+                height.append(int(actions_split[1]))
+                color_bar.append("red")
+            elif actions_split[0] == "Left_Head_Tilt":
+                x.append(actions_split[0])
+                height.append(int(actions_split[1]))
+                color_bar.append("green")
+            elif actions_split[0] == "Down_Head_Tilt":
+                x.append(actions_split[0])
+                height.append(int(actions_split[1]))
+                color_bar.append("orange")
+            elif actions_split[0] == "Centered":
+                x.append(actions_split[0])
+                height.append(int(actions_split[1]))
+                color_bar.append("blue")
+            else:
+                print("ACTION NOT FOUND: ", actions_split)
+        plt.bar(x, height, width = 0.5, color=color_bar)
+        plt.xlabel("Action")
+        plt.ylabel("Diration in Seconds")
+        plt.title("GRAPH")
+        plt.show()
+            
+
+    def clearList(self):
+        self.ids.imageID_DataImage.source = "UI/default.jpg"
+        self.ids.listID_DataList.clear_widgets()
 
 # Main build class
-class OECP(MDApp):
+class OECD(MDApp):
     def build(self):
         global sm
         self.load_kv('main.kv')
         sm = ScreenManager()
+        
+        sm.add_widget(LoginScreen(name = 'kv_login'))
         sm.add_widget(LoggedProfessor(name = 'kv_LoggedProf'))
         sm.add_widget(MyRooms(name = 'kv_MyRooms'))
-        sm.add_widget(MainStudent(name = 'kv_MainStudent'))
+        sm.add_widget(MyData(name = 'kv_MyData'))
         sm.add_widget(MyRooms(name = 'kv_MyRooms'))
-        
+        sm.add_widget(MainStudent(name = 'kv_MainStudent'))
         sm.add_widget(MainStudent(name = 'kv_MainStudent'))
         sm.add_widget(MainProfessor(name = 'kv_MainProf'))
         sm.add_widget(SignProfessor(name = 'kv_SignProf'))
         sm.add_widget(Signed(name = 'kv_Signed'))
-        sm.add_widget(LoginScreen(name = 'kv_login'))
         sm.add_widget(LoggedStudent(name = 'kv_LoggedStudent'))
         sm.add_widget(MainAdmin(name = 'kv_MainAdmin'))
         print("INITIALIZED: SCREEN MANAGER AND SCREENS")
@@ -515,7 +691,7 @@ if __name__ == "__main__":
     print("INITIALIZED: MAIN")
     db = databaseInit()
     user = userInit()
-    # tracking = visualTracking()
+    tracking = visualTracking()
     Window.size = (600, 300)
-    OECP().run()
+    OECD().run()
 

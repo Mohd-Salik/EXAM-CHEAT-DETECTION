@@ -8,6 +8,7 @@ ScreenManager:
     LoggedProfessor:
     MyRooms:
     MainAdmin:
+    MyData
 
 <LoginScreen>:
     id: ID_loginscreen
@@ -15,30 +16,30 @@ ScreenManager:
     labelID_loginscreen: labelID_loginscreen
     MDLabel:
         id: labelID_loginscreen
-        text: 'WEBCAM CHEAT PREDICTION'
+        text: 'WEBCAM CHEAT DETECTION'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
         font_size: 30
     Image:
         source: 'UI/students.png'
         allow_stretch: True
         size_hint_x: 0.23
-        pos_hint: {'center_x': .40, 'center_y': 0.52}
+        pos_hint: {'center_x': .3, 'center_y': 0.52}
     Image:
         source: 'UI/teacher.png'
         allow_stretch: True
         size_hint_x: 0.29
-        pos_hint: {'center_x': .65, 'center_y': 0.55}
+        pos_hint: {'center_x': .7, 'center_y': 0.55}
     MagicButton1:
         text: 'Im a STUDENT'
-        pos_hint: {'center_x': .40, 'center_y': 0.30}
+        pos_hint: {'center_x': .3, 'center_y': 0.30}
         on_release: 
             self.grow() 
             root.manager.current = 'kv_MainStudent'
             root.manager.transition.direction = "up"
     MagicButton1:
         text: 'Im a PROFESSOR'
-        pos_hint: {'center_x': .66, 'center_y': 0.30}
+        pos_hint: {'center_x': .71, 'center_y': 0.30}
         on_release: 
             self.grow()
             root.manager.current = 'kv_MainProf'
@@ -52,39 +53,44 @@ ScreenManager:
     textID_studentname:  textID_studentname
     textID_roomname: textID_roomname
     textID_inputprofmail: textID_inputprofmail
+    Image:
+        source: 'UI/face-recog.png'
+        allow_stretch: True
+        size_hint_x: 0.23
+        pos_hint: {'center_x': .2, 'center_y': 0.52}
     MDLabel:
         id: labelID_studentlabel
-        text: 'Student Screen'
+        text: 'STUDENTS PAGE'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        pos_hint: {'center_x': 0.55, 'center_y': 0.87}
         font_size: 28
     MDTextField:
         id: textID_studentname
         hint_text: 'STUDENT IDENTIFICATION'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.35}
+        pos_hint: {'center_x': 0.58, 'center_y': 0.3}
         size_hint: .4, 1
     MDTextField:
         id: textID_inputprofmail
         hint_text: 'PROFESSORS EMAIL'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+        pos_hint: {'center_x': 0.58, 'center_y': 0.17}
         size_hint: .4, 1
     MDTextField:
         id: textID_roomname
         hint_text: 'ROOM NAME'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.05}
+        pos_hint: {'center_x': 0.58, 'center_y': 0.03}
         size_hint: .4, 1
     MagicButton1:
         text: 'JOIN ROOM'
-        pos_hint: {'center_x': .6, 'center_y': 0.2}
+        pos_hint: {'center_x': .70, 'center_y': 0.2}
         on_release: 
             self.grow()
             root.joinRoom()
     MagicButton1:
         text: 'HOME'
-        pos_hint: {'center_x': .4, 'center_y': 0.2}
+        pos_hint: {'center_x': .50, 'center_y': 0.2}
         on_release: 
             self.grow()
             root.manager.current = 'kv_login'
@@ -99,7 +105,7 @@ ScreenManager:
         id: labelID_loggedstudentlabel
         text: 'Logged Student Screen'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
         font_size: 28
     MagicButton1:
         text: 'Start Exam'
@@ -122,40 +128,46 @@ ScreenManager:
     labelID_mainprof: labelID_mainprof
     textID_profmail:  textID_profmail
     textID_profpass: textID_profpass
+    Image:
+        source: 'UI/Database.png'
+        allow_stretch: True
+        size_hint_x: 0.29
+        pos_hint: {'center_x': .75, 'center_y': 0.55}
     MDLabel:
         id: labelID_mainprof
-        text: 'Professor Screen'
+        text: 'LOGIN PAGE'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        pos_hint: {'center_x': 0.3, 'center_y': 0.85}
         font_size: 28
     MDTextField:
         id: textID_profmail
         hint_text: 'EMAIL'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+        pos_hint: {'center_x': 0.3, 'center_y': 0.25}
         size_hint: .4, 1
     MDTextField:
         id: textID_profpass
         hint_text: 'PASSWORD'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        pos_hint: {'center_x': 0.3, 'center_y': 0.1}
         size_hint: .4, 1
     MagicButton1:
         text: 'LOGIN'
-        pos_hint: {'center_x': .6, 'center_y': 0.25}
+        pos_hint: {'center_x': .38, 'center_y': 0.3}
         on_release: 
             self.grow()
             root.logIn()
     MagicButton1:
         text: 'HOME'
-        pos_hint: {'center_x': .4, 'center_y': 0.25}
+        pos_hint: {'center_x': .23, 'center_y': 0.3}
         on_release: 
             self.grow()
+            root.resetText()
             root.manager.current = 'kv_login'
             root.manager.transition.direction = "up"
     MagicButton1:
         text: 'CREATE ACCOUNT'
-        pos_hint: {'center_x': .5, 'center_y': 0.1}
+        pos_hint: {'center_x': .3, 'center_y': 0.15}
         on_release: 
             self.grow()
             root.manager.current = 'kv_SignProf'
@@ -171,30 +183,30 @@ ScreenManager:
         id: labelID_loggedprof
         text: 'Logged Professor Screen'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.78}
         font_size: 28
     MDTextField:
         id: textID_createroom
         hint_text: 'ENTER ROOM NAME'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        pos_hint: {'center_x': 0.65, 'center_y': 0.1}
         size_hint: .4, 1
     MagicButton1:
         text: 'CREATE ROOM'
-        pos_hint: {'center_x': .4, 'center_y': 0.2}
+        pos_hint: {'center_x': .33, 'center_y': 0.5}
         on_release: 
             self.grow()
             root.createRoom()
     MagicButton1:
         text: 'MY ROOMS'
-        pos_hint: {'center_x': .6, 'center_y': 0.2}
+        pos_hint: {'center_x': .59, 'center_y': 0.2}
         on_release: 
             self.grow()
             root.loadRooms()
             root.manager.current = 'kv_MyRooms'
     MagicButton1:
         text: 'LOGOUT'
-        pos_hint: {'center_x': .2, 'center_y': 0.2}
+        pos_hint: {'center_x': .42, 'center_y': 0.2}
         on_release: 
             self.grow()
             root.manager.current = 'kv_MainProf'
@@ -214,9 +226,45 @@ ScreenManager:
         pos_hint: {'center_x': .2, 'center_y': 0.2}
         on_release: 
             self.grow()
+            root.clearList()
             root.manager.current = 'kv_LoggedProf'
             root.manager.transition.direction = "up"
 
+<MyData>:
+    name: 'kv_MyData'
+    listID_DataList: listID_DataList
+    imageID_DataImage: imageID_DataImage
+    labelID_DataLabel: labelID_DataLabel
+    Image:
+        id: imageID_DataImage
+        pos_hint: {'center_x': 0.2, 'center_y': 0.75}
+        size_hint: 0.3, 0.3
+        source: "UI/default.jpg"
+    MDLabel:
+        id: labelID_DataLabel
+        text: 'STATUS'
+        halign: 'center'
+        pos_hint: {'center_x': 0.2, 'center_y': 0.45}
+        font_size: 13
+    ScrollView:
+        size_hint: 0.55, 0.5
+        pos_hint: {'center_x': 0.65, 'center_y': 0.7}
+        MDList:
+            id: listID_DataList
+    MagicButton1:
+        text: 'SHOW GRAPH'
+        pos_hint: {'center_x': .5, 'center_y': 0.2}
+        on_release: 
+            self.grow()
+            root.showGraph()
+    MagicButton1:
+        text: 'BACK'
+        pos_hint: {'center_x': .2, 'center_y': 0.2}
+        on_release: 
+            self.grow()
+            root.clearList()
+            root.manager.current = 'kv_MyRooms'
+            root.manager.transition.direction = "up"
 
 
 <SignProfessor>:
@@ -227,7 +275,7 @@ ScreenManager:
     textID_signprofpass: textID_signprofpass
     MDLabel:
         id: labelID_signprof
-        text: 'Sign Up Screen'
+        text: 'Please enter your email and password'
         halign: 'center'
         pos_hint: {'center_x': 0.5, 'center_y': 0.9}
         font_size: 28
@@ -268,11 +316,11 @@ ScreenManager:
         id: labelID_signed
         text: 'ACCOUNT HAS BEEN CREATED'
         halign: 'center'
-        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
-        font_size: 10
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+        font_size: 28
     MagicButton1:
         text: 'OK'
-        pos_hint: {'center_x': .6, 'center_y': 0.25}
+        pos_hint: {'center_x': .5, 'center_y': 0.25}
         on_release: 
             self.grow()
             root.manager.current = 'kv_MainProf'

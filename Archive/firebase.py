@@ -16,7 +16,7 @@ firebase = pyrebase.initialize_app(firebaseConfig)
 
 database = firebase.database()
 # auth = firebase.auth()
-# storage = firebase.storage()
+storage = firebase.storage()
 
 # people=database.child("ROOMS").child("test_professor@gmail+com").get()
 # for person in people.each():
@@ -54,71 +54,71 @@ database = firebase.database()
 #     2021150051,
 #     2021241203]
 
-baste = [
-    "ALBINO",
-    "AVILA",
-    "Cabahug",
-    "Caluyong",
-    "LAURENTE",
-    "MACAHINE",
-    "Magalona",
-    "Montano",
-    "Oncada",
-    "Ortaliz",
-    "Panggoy",
-    "Pineda",
-    "Sia",
-    "Stones",
-    "Tomas"]
+# baste = [
+#     "ALBINO",
+#     "AVILA",
+#     "Cabahug",
+#     "Caluyong",
+#     "LAURENTE",
+#     "MACAHINE",
+#     "Magalona",
+#     "Montano",
+#     "Oncada",
+#     "Ortaliz",
+#     "Panggoy",
+#     "Pineda",
+#     "Sia",
+#     "Stones",
+#     "Tomas"]
 
-for entry in baste:
-    print("-------", entry)
-    student = database.child("ROOMS").child("test_professor@gmail+com").child("SIR_BASTE").child(str(entry)).get()
-    total_left = []
-    total_right = []
-    total_center = []
-    total_lower = []
-    for x in student.each():
-        try:
-            action = x.val()["Action"]
-            action = action.split("]")
-        except:
-            print("TIME")
-        if action[0] == "Right_Head_Tilt":
-            total_right.append(int(action[1]))
-        elif action[0] == "Left_Head_Tilt":
-            total_left.append(int(action[1]))
-        elif action[0] == "Down_Head_Tilt":
-            total_lower.append(int(action[1]))
-        elif action[0] == "Centered":
-            total_center.append(int(action[1]))
-        else:
-            print("ACTION NOT FOUND: ", action[0])
-    # print(total_center)
-    # print(total_right)
-    # print(total_lower)
-    # print(sum(total_left))
+# for entry in baste:
+#     print("-------", entry)
+#     student = database.child("ROOMS").child("test_professor@gmail+com").child("SIR_BASTE").child(str(entry)).get()
+#     total_left = []
+#     total_right = []
+#     total_center = []
+#     total_lower = []
+#     for x in student.each():
+#         try:
+#             action = x.val()["Action"]
+#             action = action.split("]")
+#         except:
+#             print("TIME")
+#         if action[0] == "Right_Head_Tilt":
+#             total_right.append(int(action[1]))
+#         elif action[0] == "Left_Head_Tilt":
+#             total_left.append(int(action[1]))
+#         elif action[0] == "Down_Head_Tilt":
+#             total_lower.append(int(action[1]))
+#         elif action[0] == "Centered":
+#             total_center.append(int(action[1]))
+#         else:
+#             print("ACTION NOT FOUND: ", action[0])
+#     # print(total_center)
+#     # print(total_right)
+#     # print(total_lower)
+#     # print(sum(total_left))
 
-    summation = sum(total_center) + sum(total_right) + sum(total_lower) + sum(total_left)
+#     summation = len(total_center) + len(total_right) + len(total_lower) + len(total_left)
 
-    center_pers = (sum(total_center)/summation)*100
-    left_pers = (sum(total_left)/summation)*100
-    right_pers = (sum(total_right)/summation)*100
-    lower_pers = (sum(total_lower)/summation)*100
+#     center_pers = (sum(total_center)/summation)*100
+#     left_pers = (sum(total_left)/summation)*100
+#     right_pers = (sum(total_right)/summation)*100
+#     lower_pers = (sum(total_lower)/summation)*100
 
-    # print("Centered: ", len(total_center), "\t%: ", round(center_pers, 2),
-    #     "\nLeft Head Tilt: ", len(total_left), "\t%: ", round(left_pers, 2),
-    #     "\nRight Head Tilt: ", len(total_right), "\t%: ", round(right_pers, 2),
-    #     "\nLower Head Tilt: ", len(total_lower), "\t%: ", round(lower_pers, 2),
-    #     "\nTOTAL: ", summation
-    # )
+#     # print("Centered: ", len(total_center), "\t%: ", round(center_pers, 2),
+#     #     "\nLeft Head Tilt: ", len(total_left), "\t%: ", round(left_pers, 2),
+#     #     "\nRight Head Tilt: ", len(total_right), "\t%: ", round(right_pers, 2),
+#     #     "\nLower Head Tilt: ", len(total_lower), "\t%: ", round(lower_pers, 2),
+#     #     "\nTOTAL: ", summation
+#     # )
 
-    print("Centered ", "%: ", round(center_pers, 2),
-        "\nLeft Head Tilt ", "%: ", round(left_pers, 2),
-        "\nRight Head Tilt ", "%: ", round(right_pers, 2),
-        "\nLower Head Tilt ", "%: ", round(lower_pers, 2),
-        "\nTOTAL: ", summation
-    )
+#     print("Centered ", "%: ", round(center_pers, 2),
+#         "\nLeft Head Tilt ", "%: ", round(left_pers, 2),
+#         "\nRight Head Tilt ", "%: ", round(right_pers, 2),
+#         "\nLower Head Tilt ", "%: ", round(lower_pers, 2),
+#         "\nTOTAL: ", summation
+#     )
 
 
 # AUTHENTICATION
@@ -148,11 +148,11 @@ for entry in baste:
 
 # DOWNLOAD
 # cloudefilename=input("ENTNTER FILE ON THE CLOUD: ")
-# storage.child(cloudefilename).download("", "image1.jfif")
-
+storage.child("test/default.jpg").download("", "preview.jpg")
+storage.child("ROOMS/test_professor@gmail com/default.jpg").download("", "test1.jpg")
 # READING TXT/FILE
 # cloudfilename=input("INPUT FILE NAME IN CLOUD:")
-# url=storage.child(cloudfilename).get_url(None)
+# url=storage.child("image1.jfif").get_url(None)
 # f=urllib.request.urlopen(url).read()
 # print(f)
 
@@ -181,11 +181,12 @@ for entry in baste:
 
 # database.child("ROOMS").child("qwe@gmail+com").child("CS004-Examinations").child("201812").push(data)
 
-# people = database.child("ROOMS").child("qwe@gmail+com").child("CS004-Examinations").child("201812").get()
+# people = database.child("ROOMS").child("test_professor@gmail+com").child("MAM_CHERRY_A121").child("2018100403").get()
 
 # for person in people.each():
-#     if person.key() == "-MxtOARqIIPt8QDFBZ23":
-#         print(person.val())
+#     print(person.val()["Action"])
+#     print(person.val()["File"])
+
     # print(person.key())
     # if person.val()['name']=='jande':
     #     database.child('people').child(person.key()).update({'age': 22})
