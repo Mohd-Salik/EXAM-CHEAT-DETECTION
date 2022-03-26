@@ -597,10 +597,10 @@ class LoggedProfessor(Screen):
         total_detection = len(total_center) + len(total_right) + len(total_lower) + len(total_left)
         summation = sum(total_center) + sum(total_right) + sum(total_lower) + sum(total_left)
         all_results = {
-        "Centered" : round(((sum(total_center)/summation)*100), 2),
-        "Left_Head_Tilt" : round(((sum(total_left)/summation)*100), 2),
-        "Right_Head_Tilt" : round(((sum(total_right)/summation)*100), 2),
-        "Down_Head_Tilt" : round(((sum(total_lower)/summation)*100), 2),
+            "Centered" : round(((sum(total_center)/summation)*100), 2),
+            "Left_Head_Tilt" : round(((sum(total_left)/summation)*100), 2),
+            "Right_Head_Tilt" : round(((sum(total_right)/summation)*100), 2),
+            "Down_Head_Tilt" : round(((sum(total_lower)/summation)*100), 2),
         }
         highest = max(all_results, key=all_results.get)
 
