@@ -15,7 +15,7 @@ firebaseConfig = {
 firebase = pyrebase.initialize_app(firebaseConfig)
 
 database = firebase.database()
-# auth = firebase.auth()
+auth = firebase.auth()
 storage = firebase.storage()
 
 # people=database.child("ROOMS").child("test_professor@gmail+com").get()
@@ -124,21 +124,21 @@ storage = firebase.storage()
 # AUTHENTICATION
 # email = input ("email: ")
 # password = input("pass: ")
-# try:   
-#     auth.sign_in_with_email_and_password(email, password)
-#     print("sucess")
-# except:
-#     print("INVALID USER OR PASWORD") 
+try:   
+    auth.sign_in_with_email_and_password("test_professor@gmail.com", "test_professor")
+    print("sucess")
+except:
+    print("INVALID USER OR PASWORD") 
 
 # email = input ("sign up email: ")
 # password = input("sign up pass: ")
 # confirm = input("confirm password: ")
 # if password==confirm:
-#     try: 
-#         auth.create_user_with_email_and_password(email, password)
-#         print("sucess")
-#     except:
-#         print("Email already exist")
+# try: 
+#     auth.create_user_with_email_and_password("greatefreat@gmail.com", "leroynJENKINS123")
+#     print("sucess")
+# except:
+#     print("Email already exist")
 
 # STORAGE
 # filename=input("ENTER name of file: ")
@@ -148,8 +148,8 @@ storage = firebase.storage()
 
 # DOWNLOAD
 # cloudefilename=input("ENTNTER FILE ON THE CLOUD: ")
-storage.child("test/default.jpg").download("", "preview.jpg")
-storage.child("ROOMS/test_professor@gmail com/default.jpg").download("", "test1.jpg")
+# storage.child("test/default.jpg").download("", "preview.jpg")
+# storage.child("ROOMS/test_professor@gmail com/default.jpg").download("", "test1.jpg")
 # READING TXT/FILE
 # cloudfilename=input("INPUT FILE NAME IN CLOUD:")
 # url=storage.child("image1.jfif").get_url(None)

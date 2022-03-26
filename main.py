@@ -430,9 +430,9 @@ class userInit():
 class CalculatePrediction():
     
     def getPrediction(threshold, percentage):
-        red = "massive movements \ndetected: cheating"
-        yellow = "minor movements \ndetected: probability of cheating"
-        green = "no major movements \ndetected: normal feedback"
+        red = "Massive movements detected:\n cheating"
+        yellow = "Minor movements detected:\n probability of cheating"
+        green = "No movements detected:\n normal feedback"
 
         if threshold == "STRICT":
             if 98 <= percentage <= 100:
@@ -605,7 +605,7 @@ class LoggedProfessor(Screen):
         highest = max(all_results, key=all_results.get)
 
         color, prediction_results = CalculatePrediction.getPrediction(user.getThreshold(), all_results[highest])
-        summary = "PREDICTION: {}\nTOTAL DETECTION: {}\nCENTERED: {}%\nLEFT TILT: {}%\n RIGHT TILT: {}%\n LOWER TILT: {}%".format(
+        summary = "{}\nTOTAL DETECTION: {}\nCENTERED: {}%\nLEFT TILT: {}%\n RIGHT TILT: {}%\n LOWER TILT: {}%".format(
             prediction_results,
             total_detection,
             all_results["Centered"],
@@ -660,13 +660,16 @@ class SignProfessor(Screen):
     def signUpProcess(self):
         signup_email = self.ids.textID_signprofmail.text
         signup_password = self.ids.textID_signprofpass.text
+        status = db.signUp(signup_email, signup_password)
         self.clear()
 
-        if (db.signUp(signup_email, signup_password)) == True:
-            self.parent.get_screen("kv_Signed").ids.labelID_signed.text = "ACCOUNT HAS BEEN CREATED\nYOU MAY NOW LOG IN"
-        elif (db.signUp(signup_email, signup_password)) == False:
+        if (status) == True:
+            self.parent.get_screen("kv_Signed").ids.labelID_signed.text = "ACCOUNT HAS BEEN CREATED"
+            self.parent.get_screen("kv_Signed").ids.labelID_signed2.text = "You may now log in to\n {} \n {}".format(signup_email, signup_password)
+        elif (status) == False:
             self.parent.get_screen("kv_Signed").ids.labelID_signed.text = "SIGN UP FAILED"
-            
+            self.parent.get_screen("kv_Signed").ids.labelID_signed2.text = "Invalid Credentials to\n {} \n {}".format(signup_email, signup_password)
+
     def clear(self):
         self.ids.textID_signprofmail.text = ""
         self.ids.textID_signprofpass.text = ""
@@ -762,17 +765,17 @@ class OECD(MDApp):
         self.load_kv('main.kv')
         sm = ScreenManager()
         sm.add_widget(LoggedProfessor(name = 'kv_LoggedProf'))
+        sm.add_widget(LoggedStudent(name = 'kv_LoggedStudent'))
+        sm.add_widget(MainStudent(name = 'kv_MainStudent'))
+        sm.add_widget(SignProfessor(name = 'kv_SignProf'))
+        sm.add_widget(Signed(name = 'kv_Signed'))
+        sm.add_widget(MainProfessor(name = 'kv_MainProf'))
         sm.add_widget(LoginScreen(name = 'kv_login'))
         sm.add_widget(MyRooms(name = 'kv_MyRooms'))
         sm.add_widget(MyData(name = 'kv_MyData'))
         sm.add_widget(MySummary(name = 'kv_MySummary'))
         sm.add_widget(MyRooms(name = 'kv_MyRooms'))
-        sm.add_widget(MainStudent(name = 'kv_MainStudent'))
-        sm.add_widget(MainStudent(name = 'kv_MainStudent'))
-        sm.add_widget(MainProfessor(name = 'kv_MainProf'))
-        sm.add_widget(SignProfessor(name = 'kv_SignProf'))
         sm.add_widget(Signed(name = 'kv_Signed'))
-        sm.add_widget(LoggedStudent(name = 'kv_LoggedStudent'))
         sm.add_widget(MainAdmin(name = 'kv_MainAdmin'))
         print("INITIALIZED: SCREEN MANAGER AND SCREENS")
         return sm
@@ -783,6 +786,6 @@ if __name__ == "__main__":
     db = databaseInit()
     user = userInit()
     # tracking = visualTracking()
-    Window.size = (600, 300)
+    Window.size = (400, 650)
     OECD().run()
 

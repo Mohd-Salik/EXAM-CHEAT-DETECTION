@@ -20,7 +20,7 @@ model.add(LSTM(64, return_sequences=False, activation='relu'))
 model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(actions.shape[0], activation='softmax'))
-model.load_weights('NoIRIS/noiris.h5')
+model.load_weights('Archive/NoIRIS/noiris.h5')
 
 colors = [(245,117,16), (117,245,16), (16,117,245)]
 def prob_viz(res, actions, input_frame, colors):
@@ -63,7 +63,7 @@ sequence = []
 sentence = []
 threshold = 0.8
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
     while cap.isOpened():
