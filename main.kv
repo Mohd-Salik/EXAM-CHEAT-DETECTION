@@ -8,7 +8,8 @@ ScreenManager:
     LoggedProfessor:
     MyRooms:
     MainAdmin:
-    MyData
+    MyData:
+    MySummary:
 
 <LoginScreen>:
     id: ID_loginscreen
@@ -216,6 +217,10 @@ ScreenManager:
 <MyRooms>:
     name: 'kv_MyRooms'
     listID_MainList: listID_MainList
+    buttonID_Lenient: buttonID_Lenient
+    buttonID_Moderate: buttonID_Moderate
+    buttonID_Strict: buttonID_Strict
+    buttonID_CreateSummary: buttonID_CreateSummary
     ScrollView:
         size_hint: 0.8, 0.5
         pos_hint: {'center_x': 0.5, 'center_y': 0.7}
@@ -223,12 +228,64 @@ ScreenManager:
             id: listID_MainList
     MagicButton1:
         text: 'BACK'
-        pos_hint: {'center_x': .2, 'center_y': 0.2}
+        pos_hint: {'center_x': .2, 'center_y': 0.05}
         on_release: 
             self.grow()
             root.clearList()
             root.manager.current = 'kv_LoggedProf'
             root.manager.transition.direction = "up"
+    MagicButton1:
+        id: buttonID_CreateSummary
+        text: 'CREATE SUMMARY'
+        pos_hint: {'center_x': .2, 'center_y': 0.2}
+        disabled: True
+        on_release: 
+            self.grow()
+            root.createSummary()
+            root.manager.current = 'kv_MySummary'
+            root.manager.transition.direction = "up"
+    MagicButton1:
+        id: buttonID_Lenient
+        text: 'LENIENT'
+        pos_hint: {'center_x': .7, 'center_y': 0.05}
+        opacity: .5
+        on_release: 
+            self.grow()
+            root.setLenient()
+    MagicButton1:
+        id: buttonID_Moderate
+        text: 'MODERATE'
+        opacity: 1
+        pos_hint: {'center_x': .7, 'center_y': 0.2}
+        on_release: 
+            self.grow()
+            root.setModerate()
+    MagicButton1:
+        id: buttonID_Strict
+        text: 'STRICT'
+        opacity: .5
+        pos_hint: {'center_x': .7, 'center_y': 0.4}
+        on_release: 
+            self.grow()
+            root.setStrict()
+
+
+<MySummary>:
+    name: 'kv_MySummary'
+    MDLabel:
+        text: 'SUMMARY HAS BEEN CREATED\nPLEASE CHECK RESULTS FOLDER'
+        halign: 'center'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+        font_size: 28
+    MagicButton1:
+        text: 'OK'
+        pos_hint: {'center_x': .5, 'center_y': 0.25}
+        on_release: 
+            self.grow()
+            root.manager.current = 'kv_MyRooms'
+            root.manager.transition.direction = "up"
+
+
 
 <MyData>:
     name: 'kv_MyData'

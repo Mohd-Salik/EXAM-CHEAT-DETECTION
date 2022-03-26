@@ -1,3 +1,4 @@
+from cv2 import threshold
 from kivy.core.window import Window
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen, ScreenManager
@@ -20,11 +21,11 @@ import time
 from datetime import datetime
 
 from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
-from tensorflow.keras.callbacks import TensorBoard
+# from sklearn.model_selection import train_test_split
+# from tensorflow.keras.utils import to_categorical
+# from tensorflow.keras.models import Sequential
+# from tensorflow.keras.layers import LSTM, Dense
+# from tensorflow.keras.callbacks import TensorBoard
 
 class MagicButton1(MagicBehavior, MDRaisedButton):
     pass
@@ -356,11 +357,12 @@ class databaseInit():
 
 class userInit():
     def __init__(self, **kwargs):
-        self.prof_mail = ""
-        self.prof_pass = ""
+        self.prof_mail = "test_professor@gmail.com"
+        self.prof_pass = "test_professor"
         self.student_name = ""
         self.room_name = ""
         self.actions = []
+        self.threshold = "MODERATE"
     
     def profMail(self):
         return self.prof_mail
@@ -417,6 +419,42 @@ class userInit():
 
     def getResults(self):
         return self.actions
+
+    def setThreshold(self, threshold):
+        self.threshold = str(threshold)
+
+    def getThreshold(self):
+        return self.threshold
+
+
+class CalculatePrediction():
+    
+    def getPrediction(threshold, percentage):
+        red = "massive movements \ndetected: cheating"
+        yellow = "minor movements \ndetected: probability of cheating"
+        green = "no major movements \ndetected: normal feedback"
+
+        if threshold == "STRICT":
+            if 98 <= percentage <= 100:
+                return "green", green
+            elif 95 <= percentage <= 97:
+                return "yellow", yellow
+            elif percentage < 95:
+                return "red", red
+        elif threshold == "MODERATE":
+            if 90 <= percentage <= 100:
+                return "green", green
+            elif 80 <= percentage <= 89:
+                return "yellow", yellow
+            elif percentage < 80:
+                return "red", red
+        elif threshold == "LENIENT":
+            if 80 <= percentage <= 100:
+                return "green", green
+            elif 70 <= percentage <= 79:
+                return "yellow", yellow
+            elif percentage < 70:
+                return "red", red
 
 class LoginScreen(Screen):
     print("INITIALIZED: LOGIN SCREEN")
@@ -523,6 +561,7 @@ class LoggedProfessor(Screen):
         global sm
         room_name = room.text
         user.setRoomName(room_name)
+        sm.get_screen("kv_MyRooms").ids.buttonID_CreateSummary.disabled = False
         sm.get_screen("kv_MyRooms").ids.listID_MainList.clear_widgets()
         list_students = db.getStudents(user.getProfessorName(), str(room_name))
 
@@ -557,16 +596,22 @@ class LoggedProfessor(Screen):
                 print("ACTION NOT FOUND: ", actions_split)
         total_detection = len(total_center) + len(total_right) + len(total_lower) + len(total_left)
         summation = sum(total_center) + sum(total_right) + sum(total_lower) + sum(total_left)
-        center_pers = (sum(total_center)/summation)*100
-        left_pers = (sum(total_left)/summation)*100
-        right_pers = (sum(total_right)/summation)*100
-        lower_pers = (sum(total_lower)/summation)*100
-        summary = "TOTAL DETECTION: {}\nCENTERED: {}%\nLEFT TILT: {}%\n RIGHT TILT: {}%\n LOWER TILT: {}%".format(
+        all_results = {
+        "Centered" : round(((sum(total_center)/summation)*100), 2),
+        "Left_Head_Tilt" : round(((sum(total_left)/summation)*100), 2),
+        "Right_Head_Tilt" : round(((sum(total_right)/summation)*100), 2),
+        "Down_Head_Tilt" : round(((sum(total_lower)/summation)*100), 2),
+        }
+        highest = max(all_results, key=all_results.get)
+
+        color, prediction_results = CalculatePrediction.getPrediction(user.getThreshold(), all_results[highest])
+        summary = "PREDICTION: {}\nTOTAL DETECTION: {}\nCENTERED: {}%\nLEFT TILT: {}%\n RIGHT TILT: {}%\n LOWER TILT: {}%".format(
+            prediction_results,
             total_detection,
-            round(center_pers, 2),
-            round(left_pers, 2),
-            round(right_pers, 2),
-            round(lower_pers, 2)
+            all_results["Centered"],
+            all_results["Left_Head_Tilt"],
+            all_results["Right_Head_Tilt"],
+            all_results["Down_Head_Tilt"]
         )
         sm.get_screen("kv_MyData").ids.labelID_DataLabel.text = summary
         user.setResults(list_actions)
@@ -576,7 +621,18 @@ class LoggedProfessor(Screen):
             image_file = str(image)
             action_name = list_actions[list_images.index(image_file)]
             action_split = action_name.split("]")
-            profile = TwoLineAvatarListItem(text = image_file, secondary_text = "{} for {} seconds".format(action_split[0], action_split[1]), on_release = lambda image_file:self.loadImage(image_file))
+            if color == "green":
+                profile = TwoLineAvatarListItem(text = image_file, secondary_text = "{} for {} seconds".format(action_split[0], action_split[1]), on_release = lambda image_file:self.loadImage(image_file))
+            else:
+                if action_split[0] == highest:
+                    profile = TwoLineAvatarListItem(text = image_file, secondary_text = "{} for {} seconds".format(action_split[0], action_split[1]), on_release = lambda image_file:self.loadImage(image_file))
+                else:
+                    if color == "red":
+                        profile = TwoLineAvatarListItem(text = image_file, secondary_text = "{} for {} seconds".format(action_split[0], action_split[1]), on_release = lambda image_file:self.loadImage(image_file))
+                        profile.add_widget(ImageLeftWidget(source = "UI/red.png"))
+                    elif color == "yellow":
+                        profile = TwoLineAvatarListItem(text = image_file, secondary_text = "{} for {} seconds".format(action_split[0], action_split[1]), on_release = lambda image_file:self.loadImage(image_file))
+                        profile.add_widget(ImageLeftWidget(source = "UI/yellow.png"))
             sm.get_screen("kv_MyData").ids.listID_DataList.add_widget(profile)
         sm.current = "kv_MyData"
 
@@ -624,7 +680,42 @@ class MyRooms(Screen):
     print("INITIALIZED: MyRooms SCREEN")
 
     def clearList(self):
+        self.ids.buttonID_CreateSummary.disabled = False
         self.ids.listID_MainList.clear_widgets()
+
+    def createSummary(self):
+        print("CREATING SUMMARY")
+
+    def reloadRooms(self):
+        print("RELOADING ROOM LIST")
+        global sm
+        sm.get_screen("kv_LoggedProf").loadRooms()
+
+    def setLenient(self):
+        print("DEBUG: SET THRESHOLD TO LENIENT")
+        user.setThreshold("LENIENT")
+        self.ids.buttonID_Lenient.opacity = 1
+        self.ids.buttonID_Moderate.opacity = .5
+        self.ids.buttonID_Strict.opacity = .5
+    
+    def setModerate(self):
+        print("DEBUG: SET THRESHOLD TO MODERATE")
+        user.setThreshold("MODERATE")
+        self.ids.buttonID_Lenient.opacity = .5
+        self.ids.buttonID_Moderate.opacity = 1
+        self.ids.buttonID_Strict.opacity = .5
+    
+    def setStrict(self):
+        print("DEBUG: SET THRESHOLD TO STRICT")
+        user.setThreshold("STRICT")
+        self.ids.buttonID_Lenient.opacity = .5
+        self.ids.buttonID_Moderate.opacity = .5
+        self.ids.buttonID_Strict.opacity = 1
+
+
+class MySummary(Screen):
+    print("INITIALIZED: MySummary SCREEN")
+
 
 
 class MyData(Screen):
@@ -670,11 +761,11 @@ class OECD(MDApp):
         global sm
         self.load_kv('main.kv')
         sm = ScreenManager()
-        
-        sm.add_widget(LoginScreen(name = 'kv_login'))
         sm.add_widget(LoggedProfessor(name = 'kv_LoggedProf'))
+        sm.add_widget(LoginScreen(name = 'kv_login'))
         sm.add_widget(MyRooms(name = 'kv_MyRooms'))
         sm.add_widget(MyData(name = 'kv_MyData'))
+        sm.add_widget(MySummary(name = 'kv_MySummary'))
         sm.add_widget(MyRooms(name = 'kv_MyRooms'))
         sm.add_widget(MainStudent(name = 'kv_MainStudent'))
         sm.add_widget(MainStudent(name = 'kv_MainStudent'))
@@ -691,7 +782,7 @@ if __name__ == "__main__":
     print("INITIALIZED: MAIN")
     db = databaseInit()
     user = userInit()
-    tracking = visualTracking()
+    # tracking = visualTracking()
     Window.size = (600, 300)
     OECD().run()
 
