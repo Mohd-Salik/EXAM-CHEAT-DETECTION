@@ -12,6 +12,7 @@ from kivymd.uix.list import OneLineAvatarListItem, ThreeLineAvatarListItem, TwoL
 
 import pyrebase
 import urllib
+import xlsxwriter
 
 import cv2
 import mediapipe as mp
@@ -21,11 +22,11 @@ import time
 from datetime import datetime
 
 from matplotlib import pyplot as plt
-# from sklearn.model_selection import train_test_split
-# from tensorflow.keras.utils import to_categorical
-# from tensorflow.keras.models import Sequential
-# from tensorflow.keras.layers import LSTM, Dense
-# from tensorflow.keras.callbacks import TensorBoard
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.callbacks import TensorBoard
 
 class MagicButton1(MagicBehavior, MDRaisedButton):
     pass
@@ -498,7 +499,9 @@ class MainProfessor(Screen):
         signin_email = self.ids.textID_profmail.text
         signin_password = self.ids.textID_profpass.text
 
-        if (db.signIn(signin_email, signin_password)) == True:
+        status_login = db.signIn(signin_email, signin_password)
+
+        if (status_login) == True:
             print("DEBUG: {}, {} Successfully Logged".format(signin_email, signin_password))
             user.setProfessorName(signin_email)
             user.setProfessorPassword(signin_password)
@@ -507,7 +510,7 @@ class MainProfessor(Screen):
             self.parent.get_screen("kv_LoggedProf").ids.labelID_loggedprof.text = "Welcome {}!".format(signin_email)
             self.parent.current = "kv_LoggedProf"
 
-        elif (db.signIn(signin_email, signin_password)) == False:
+        elif (status_login) == False:
             print("DEBUG: {}, {} Log In Failed, Invalid Input".format(signin_email, signin_password))
             self.ids.labelID_mainprof.text = "SIGN IN FAILED"
         
@@ -688,6 +691,71 @@ class MyRooms(Screen):
 
     def createSummary(self):
         print("CREATING SUMMARY")
+        room_name = user.getRoomName()
+        prof_name = user.getProfessorName()
+        threshold_set = user.getThreshold()
+        workbook = xlsxwriter.Workbook('RESULTS/{}-{}.xlsx'.format(room_name, prof_name))
+        worksheet = workbook.add_worksheet("CLASSROOM SUMMARY")
+
+        row = 0
+        col = 0
+        worksheet.write(row, col,     "STUDENT")
+        worksheet.write(row, col + 1, "TOTAL DETECTIONS")
+        worksheet.write(row, col + 2, "VARIATIONS")
+        worksheet.write(row, col + 3, "THRESHOLD")
+        worksheet.write(row, col + 4, "PREDICTION")
+        row += 1
+
+        list_students = db.getStudents(user.getProfessorName(), str(room_name))
+
+        for students in list_students:
+            students_name = str(students)
+            if (students_name == "room name"):
+                pass
+            else:
+                list_actions, list_images = db.getStudentData(prof_name, room_name, students_name)
+                total_left = []
+                total_right = []
+                total_center = []
+                total_lower = []
+                for actions in list_actions:
+                    actions_split = actions.split("]")
+                    if actions_split[0] == "Right_Head_Tilt":
+                        total_right.append(int(actions_split[1]))
+                    elif actions_split[0] == "Left_Head_Tilt":
+                        total_left.append(int(actions_split[1]))
+                    elif actions_split[0] == "Down_Head_Tilt":
+                        total_lower.append(int(actions_split[1]))
+                    elif actions_split[0] == "Centered":
+                        total_center.append(int(actions_split[1]))
+                    else:
+                        print("ACTION NOT FOUND: ", actions_split)
+                total_detection = len(total_center) + len(total_right) + len(total_lower) + len(total_left)
+                summation = sum(total_center) + sum(total_right) + sum(total_lower) + sum(total_left)
+                all_results = {
+                    "Centered" : round(((sum(total_center)/summation)*100), 2),
+                    "Left_Head_Tilt" : round(((sum(total_left)/summation)*100), 2),
+                    "Right_Head_Tilt" : round(((sum(total_right)/summation)*100), 2),
+                    "Down_Head_Tilt" : round(((sum(total_lower)/summation)*100), 2),
+                }
+                highest = max(all_results, key=all_results.get)
+                color, prediction_results = CalculatePrediction.getPrediction(threshold_set, all_results[highest])
+                variation_summary = "CENTERED: {}%\nLEFT TILT: {}%\n RIGHT TILT: {}%\n LOWER TILT: {}%".format(
+                    all_results["Centered"],
+                    all_results["Left_Head_Tilt"],
+                    all_results["Right_Head_Tilt"],
+                    all_results["Down_Head_Tilt"]
+                )
+            
+                worksheet.write(row, col,     students_name)
+                worksheet.write(row, col + 1, total_detection)
+                worksheet.write(row, col + 2, variation_summary)
+                worksheet.write(row, col + 3, threshold_set)
+                worksheet.write(row, col + 4, prediction_results)
+                row += 1
+
+        workbook.close()
+
 
     def reloadRooms(self):
         print("RELOADING ROOM LIST")
@@ -785,7 +853,7 @@ if __name__ == "__main__":
     print("INITIALIZED: MAIN")
     db = databaseInit()
     user = userInit()
-    # tracking = visualTracking()
+    tracking = visualTracking()
     Window.size = (400, 650)
     OECD().run()
 
