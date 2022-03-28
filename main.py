@@ -693,9 +693,10 @@ class MyRooms(Screen):
         print("CREATING SUMMARY")
         room_name = user.getRoomName()
         prof_name = user.getProfessorName()
-        threshold_set = user.getThreshold()
         workbook = xlsxwriter.Workbook('RESULTS/{}-{}.xlsx'.format(room_name, prof_name))
-        worksheet = workbook.add_worksheet("CLASSROOM SUMMARY")
+        worksheet = workbook.add_worksheet("LENIENT")
+        worksheet2 = workbook.add_worksheet("MODERATE")
+        worksheet3 = workbook.add_worksheet("STRICT")
 
         row = 0
         col = 0
@@ -703,8 +704,23 @@ class MyRooms(Screen):
         worksheet.write(row, col + 1, "TOTAL DETECTIONS")
         worksheet.write(row, col + 2, "VARIATIONS")
         worksheet.write(row, col + 3, "THRESHOLD")
-        worksheet.write(row, col + 4, "PREDICTION")
+        worksheet.write(row, col + 4, "REMARKS")
+
+        worksheet2.write(row, col,     "STUDENT")
+        worksheet2.write(row, col + 1, "TOTAL DETECTIONS")
+        worksheet2.write(row, col + 2, "VARIATIONS")
+        worksheet2.write(row, col + 3, "THRESHOLD")
+        worksheet2.write(row, col + 4, "REMARKS")
+
+        worksheet3.write(row, col,     "STUDENT")
+        worksheet3.write(row, col + 1, "TOTAL DETECTIONS")
+        worksheet3.write(row, col + 2, "VARIATIONS")
+        worksheet3.write(row, col + 3, "THRESHOLD")
+        worksheet3.write(row, col + 4, "REMARKS")
+
         row += 1
+
+        
 
         list_students = db.getStudents(user.getProfessorName(), str(room_name))
 
@@ -731,27 +747,51 @@ class MyRooms(Screen):
                     else:
                         print("ACTION NOT FOUND: ", actions_split)
                 total_detection = len(total_center) + len(total_right) + len(total_lower) + len(total_left)
+
                 summation = sum(total_center) + sum(total_right) + sum(total_lower) + sum(total_left)
-                all_results = {
-                    "Centered" : round(((sum(total_center)/summation)*100), 2),
-                    "Left_Head_Tilt" : round(((sum(total_left)/summation)*100), 2),
-                    "Right_Head_Tilt" : round(((sum(total_right)/summation)*100), 2),
-                    "Down_Head_Tilt" : round(((sum(total_lower)/summation)*100), 2),
-                }
+                
+                try:
+                    all_results = {
+                        "Centered" : round(((sum(total_center)/summation)*100), 2),
+                        "Left_Head_Tilt" : round(((sum(total_left)/summation)*100), 2),
+                        "Right_Head_Tilt" : round(((sum(total_right)/summation)*100), 2),
+                        "Down_Head_Tilt" : round(((sum(total_lower)/summation)*100), 2),
+                    }
+                except:
+                    print("INVALID PERCENTAGE")
+
                 highest = max(all_results, key=all_results.get)
-                color, prediction_results = CalculatePrediction.getPrediction(threshold_set, all_results[highest])
+                try:
+                    color, prediction_results1 = CalculatePrediction.getPrediction("LENIENT", all_results[highest])
+                    color1, prediction_results2 = CalculatePrediction.getPrediction("MODERATE", all_results[highest])
+                    color2, prediction_results3 = CalculatePrediction.getPrediction("STRICT", all_results[highest])
+                except:
+                    print("ERROR: INVALID THRESHOLD")
                 variation_summary = "CENTERED: {}%\nLEFT TILT: {}%\n RIGHT TILT: {}%\n LOWER TILT: {}%".format(
                     all_results["Centered"],
                     all_results["Left_Head_Tilt"],
                     all_results["Right_Head_Tilt"],
                     all_results["Down_Head_Tilt"]
                 )
-            
-                worksheet.write(row, col,     students_name)
+
+                worksheet.write(row, col, students_name)
                 worksheet.write(row, col + 1, total_detection)
                 worksheet.write(row, col + 2, variation_summary)
-                worksheet.write(row, col + 3, threshold_set)
-                worksheet.write(row, col + 4, prediction_results)
+                worksheet.write(row, col + 3, "LENIENT")
+                worksheet.write(row, col + 4, prediction_results1)
+
+                worksheet2.write(row, col, students_name)
+                worksheet2.write(row, col + 1, total_detection)
+                worksheet2.write(row, col + 2, variation_summary)
+                worksheet2.write(row, col + 3, "MODERATE")
+                worksheet2.write(row, col + 4, prediction_results2)
+
+                worksheet3.write(row, col, students_name)
+                worksheet3.write(row, col + 1, total_detection)
+                worksheet3.write(row, col + 2, variation_summary)
+                worksheet3.write(row, col + 3, "STRICT")
+                worksheet3.write(row, col + 4, prediction_results3)
+
                 row += 1
 
         workbook.close()
